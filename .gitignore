@@ -1,0 +1,23 @@
+# Voice-lab tooling — regenerable, and far too big to version.
+#   uv venv --python 3.9 voice-lab/venv
+#   uv pip install --python voice-lab/venv edge-tts kokoro onnxruntime
+# Models re-download from HuggingFace on first run.
+voice-lab/venv/
+voice-lab/models/
+
+# Internal working notes.
+BUILD_LOG.md
+voice-lab/gap-fix-brief.md
+
+# Narration pipeline byproducts.
+audio/backup-*/
+audio/gaps*.json
+
+# Stale staging copy — the repo root is the deployable site.
+dist/
+
+# OS / tooling noise.
+.DS_Store
+__pycache__/
+*.pyc
+node_modules/

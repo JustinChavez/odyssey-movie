@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Odyssey — Tell Me, O Muse</title>
+<meta name="description" content="A two-minute procedural film of the opening of Homer's Odyssey, Book I. Every mesh, texture, camera move and sound is generated in code with Three.js and WebAudio — no 3D assets, and the same render every play.">
+<meta name="author" content="Justin Chavez">
+<meta property="og:type" content="website">
+<meta property="og:title" content="The Odyssey — Tell Me, O Muse">
+<meta property="og:description" content="A two-minute procedural film of the opening of Homer's Odyssey, Book I. Every mesh, texture, camera move and sound is generated in code with Three.js and WebAudio.">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%230b0b0b' stroke='%23b07a3e' stroke-width='2'/><line x1='16' y1='16' x2='16' y2='5' stroke='%23c08a4e' stroke-width='2' stroke-linecap='round'/><circle cx='16' cy='16' r='2.2' fill='%23efe6d4'/></svg>">
+<style>
+  :root {
+    --bronze: #b07a3e;
+    --bronze-2: #8a5c2a;
+    --lume: #efe6d4;
+    --lume-dim: #b9ad93;
+    --dial: #0b0b0b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    background: #000; color: var(--lume);
+    font-family: 'Helvetica Neue', 'Arial Narrow', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  #stage { position: fixed; inset: 0; }
+  canvas { display: block; width: 100%; height: 100%; }
+
+  /* Greek-key meander hairline along the bottom of the screen */
+  #meander {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 12px; z-index: 11;
+    pointer-events: none; opacity: .55;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="12" viewBox="0 0 28 12"><path d="M0 10h18v-6h6v2h-2" fill="none" stroke="%23b07a3e" stroke-width="2"/></svg>');
+  }
+
+  #vignette {
+    position: fixed; inset: 0; z-index: 4; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 70% at 50% 46%, rgba(0,0,0,0) 55%, rgba(0,0,0,.42) 100%),
+      linear-gradient(to bottom, rgba(6,8,16,.14) 0%, rgba(0,0,0,0) 22%);
+  }
+
+  #fade { position: fixed; inset: 0; background: #000; z-index: 6; pointer-events: none; opacity: 0; }
+
+  /* --- captions: the poem, in cream --- */
+  #caption {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: 15.5vh; width: min(72ch, 86vw); z-index: 7;
+    text-align: center; pointer-events: none;
+    font-family: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    font-style: italic; font-size: clamp(15px, 2.05vh, 26px);
+    line-height: 1.55; letter-spacing: 0.02em;
+    color: var(--lume);
+    text-shadow: 0 1px 3px rgba(0,0,0,.95), 0 0 26px rgba(0,0,0,.85), 0 0 4px rgba(0,0,0,.9);
+    opacity: 0; transition: opacity .5s ease;
+  }
+  #caption.show { opacity: 1; }
+  body.nocap #caption { display: none; }
+
+  /* --- shot slate --- */
+  #shotname {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: 10.5vh; z-index: 7; pointer-events: none;
+    font-size: 10px; letter-spacing: .34em; text-transform: uppercase;
+    color: var(--bronze); opacity: .85; white-space: nowrap;
+    transition: opacity .4s ease;
+  }
+  body.nocap #shotname { display: none; }
+
+  /* --- title: the dial --- */
+  #title {
+    position: fixed; inset: 0; z-index: 20;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 42%, #171310 0%, #000 75%);
+    transition: opacity .9s ease;
+  }
+  #title.gone { opacity: 0; pointer-events: none; }
+  #title h1 {
+    margin: 0 0 .4em; font-weight: 500; letter-spacing: .3em;
+    font-size: clamp(22px, 5.2vh, 58px); text-transform: uppercase;
+    color: var(--lume);
+  }
+  #title .kicker {
+    margin: 0 0 .8em; font-size: clamp(11px, 1.6vh, 15px);
+    letter-spacing: .42em; text-transform: uppercase; color: var(--bronze);
+  }
+  #title .src {
+    margin: 0 0 2.2em; font-size: clamp(11px, 1.7vh, 16px);
+    letter-spacing: .09em; color: var(--lume-dim); font-style: italic;
+    text-align: center; padding: 0 6vw;
+  }
+
+  #watch { width: min(40vh, 68vw); height: auto; display: block; margin-bottom: 2.4vh; }
+
+  #play {
+    appearance: none; border: 1px solid var(--bronze-2); background: transparent;
+    color: var(--lume); font-family: inherit; letter-spacing: .3em; text-indent: .3em;
+    font-size: clamp(10px, 1.5vh, 14px); text-transform: uppercase;
+    padding: 1em 3.2em; cursor: pointer; border-radius: 999px;
+    transition: background .25s, color .25s, border-color .25s;
+  }
+  #play:hover:not(:disabled) { background: var(--bronze); color: #14100a; border-color: var(--bronze); }
+  #play:disabled { opacity: .5; cursor: default; }
+
+  #loadwrap { width: min(300px, 60vw); margin-top: 1.5em; text-align: center; }
+  #loadbar { height: 1px; background: #2a231a; overflow: hidden; }
+  #loadfill { height: 100%; width: 0%; background: var(--bronze); transition: width .25s ease; }
+  #loadtxt {
+    margin-top: .8em; font-size: 9.5px; letter-spacing: .22em;
+    text-transform: uppercase; color: #6a6152; min-height: 1.2em;
+  }
+
+  #title .voicelab {
+    margin: 1.3em 0 0; font-size: 9.5px; letter-spacing: .24em;
+    text-transform: uppercase; color: #5d5547;
+  }
+  #title .voicelab a { color: var(--bronze); text-decoration: none; border-bottom: 1px solid rgba(176,122,62,.4); padding-bottom: 1px; }
+
+  /* --- transport: crown, seconds-track, register --- */
+  #ui {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 12;
+    padding: 0 0 5.2vh;
+    display: flex; align-items: center; justify-content: center;
+    gap: clamp(14px, 2.6vw, 34px);
+    opacity: 0; transition: opacity .35s ease; pointer-events: none;
+  }
+  #ui.show { opacity: 1; pointer-events: auto; }
+  body.titlemode #ui { display: none; }
+
+  #crownWrap { position: relative; width: clamp(40px, 5.4vh, 56px); height: clamp(40px, 5.4vh, 56px); }
+  #ring { position: absolute; inset: -6px; transform: rotate(-90deg); }
+  #ring .track { fill: none; stroke: #2a231a; stroke-width: 2; }
+  #ring .fill { fill: none; stroke: var(--bronze); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 314; stroke-dashoffset: 314; }
+  #bPlay {
+    position: absolute; inset: 0;
+    appearance: none; border-radius: 50%;
+    border: 1px solid var(--bronze-2);
+    background: radial-gradient(circle at 35% 30%, #2a2013, #120d07 70%);
+    color: var(--bronze); font-size: clamp(14px, 2vh, 19px);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    padding: 0 0 0 .14em;
+    transition: background .2s, color .2s, border-color .2s;
+  }
+  #bPlay:hover { border-color: var(--bronze); color: var(--lume); }
+
+  #scrub {
+    position: relative; width: min(460px, 46vw); height: 26px;
+    cursor: pointer; display: flex; align-items: center;
+    background-image: repeating-linear-gradient(90deg, #3a3126 0 1px, transparent 1px 20px);
+  }
+  #track { position: relative; width: 100%; height: 3px; background: #1d1812; }
+  #fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: var(--bronze); }
+  #knob {
+    position: absolute; top: 50%; left: 0%; width: 4px; height: 14px;
+    background: var(--lume); transform: translate(-50%, -50%);
+    opacity: 0; transition: opacity .2s;
+  }
+  #scrub:hover #knob, #scrub.drag #knob { opacity: 1; }
+
+  #tc {
+    font-size: 12px; letter-spacing: .14em; opacity: .75;
+    font-variant-numeric: tabular-nums; min-width: 92px; text-align: left;
+  }
+
+  /* --- end card --- */
+  #end {
+    position: fixed; inset: 0; z-index: 19; pointer-events: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 50%, rgba(18,14,8,.55) 0%, rgba(0,0,0,.85) 100%);
+    opacity: 0; transition: opacity 1.6s ease;
+  }
+  #end.show { opacity: 1; }
+  #end .fin {
+    margin: 0 0 .6em; font-size: clamp(20px, 4.4vh, 46px);
+    letter-spacing: .5em; text-indent: .5em; color: var(--lume); text-transform: uppercase;
+  }
+  #end .endline { margin: .2em 0; font-size: clamp(12px, 1.8vh, 17px); letter-spacing: .12em; color: var(--lume-dim); font-style: italic; }
+  #end .endline.sm { font-size: clamp(9.5px, 1.4vh, 13px); color: var(--bronze); letter-spacing: .3em; text-transform: uppercase; font-style: normal; }
+</style>
+</head>
+<body class="titlemode">
+
+<div id="stage"><canvas id="c"></canvas></div>
+<div id="vignette"></div>
+<div id="meander"></div>
+<div id="fade"></div>
+<div id="caption"></div>
+<div id="shotname"></div>
+
+<div id="ui">
+  <div id="crownWrap">
+    <svg id="ring" viewBox="0 0 112 112">
+      <circle class="track" cx="56" cy="56" r="50"></circle>
+      <circle class="fill" cx="56" cy="56" r="50"></circle>
+    </svg>
+    <button id="bPlay" title="Play / pause (space)"><span id="pg">&#9654;</span></button>
+  </div>
+  <div id="scrub"><div id="track"><div id="fill"></div><div id="knob"></div></div></div>
+  <div id="tc">0:00 / 0:00</div>
+</div>
+
+<div id="title">
+  <svg id="watch" viewBox="0 0 420 420" aria-label="Odyssey dial">
+    <defs>
+      <linearGradient id="case" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#c08a4e"/><stop offset=".5" stop-color="#8a5c2a"/><stop offset="1" stop-color="#5e3d1a"/>
+      </linearGradient>
+      <linearGradient id="brush" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#101010"/><stop offset=".5" stop-color="#0a0a0a"/><stop offset="1" stop-color="#131313"/>
+      </linearGradient>
+      <linearGradient id="handGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#d8a86a"/><stop offset=".5" stop-color="#a06b33"/><stop offset="1" stop-color="#7c4f20"/>
+      </linearGradient>
+    </defs>
+
+    <!-- strap -->
+    <rect x="150" y="-14" width="120" height="84" rx="10" fill="#4a3520"/>
+    <rect x="150" y="350" width="120" height="84" rx="10" fill="#4a3520"/>
+    <rect x="150" y="-14" width="120" height="84" rx="10" fill="none" stroke="#7a5c3a" stroke-width="3"/>
+    <rect x="150" y="350" width="120" height="84" rx="10" fill="none" stroke="#7a5c3a" stroke-width="3"/>
+    <line x1="158" y1="6" x2="262" y2="6" stroke="#a5855f" stroke-width="2"/>
+    <line x1="158" y1="414" x2="262" y2="414" stroke="#a5855f" stroke-width="2"/>
+
+    <!-- bronze case + brushed black dial -->
+    <circle cx="210" cy="210" r="198" fill="url(#case)"/>
+    <circle cx="210" cy="210" r="188" fill="#1a140c"/>
+    <circle cx="210" cy="210" r="184" fill="url(#brush)"/>
+
+    <!-- Greek-key chapter ring -->
+    <circle cx="210" cy="210" r="172" fill="none" stroke="#8a6a48" stroke-width="2" stroke-dasharray="1 7" opacity=".8"/>
+    <circle cx="210" cy="210" r="168" fill="none" stroke="#6e4c26" stroke-width="6" stroke-dasharray="10 14" opacity=".85"/>
+    <circle cx="210" cy="210" r="164" fill="none" stroke="#2a2013" stroke-width="2"/>
+
+    <!-- rivet index at 12 -->
+    <g transform="translate(210, 56)">
+      <rect x="-14" y="-6" width="28" height="12" rx="3" fill="url(#handGrad)"/>
+      <rect x="-14" y="-6" width="28" height="12" rx="3" fill="none" stroke="#5e3d1a" stroke-width="1"/>
+      <circle cx="-7" cy="0" r="2.2" fill="#e9dfc8"/>
+      <circle cx="7" cy="0" r="2.2" fill="#e9dfc8"/>
+    </g>
+
+    <!-- lume indices -->
+    <g id="indices"></g>
+
+    <!-- dial text: the film's own, nothing else -->
+    <text x="210" y="120" text-anchor="middle" fill="#e9dfc8" font-size="15" letter-spacing="7" font-family="Helvetica Neue, Arial Narrow, sans-serif" font-weight="600">ODYSSEY</text>
+    <text x="210" y="140" text-anchor="middle" fill="#b9ad93" font-size="8" letter-spacing="4" font-family="Helvetica Neue, Arial Narrow, sans-serif">BOOK I</text>
+    <text x="210" y="300" text-anchor="middle" fill="#b9ad93" font-size="8" letter-spacing="4" font-family="Helvetica Neue, Arial Narrow, sans-serif">THE WINE-DARK SEA</text>
+
+    <!-- hour + minute hands at 10:08 -->
+    <g transform="translate(210,210) rotate(304)">
+      <path d="M0 -66 L7 -10 L4 12 L-4 12 L-7 -10 Z" fill="url(#handGrad)" stroke="#5e3d1a" stroke-width="1"/>
+      <line x1="0" y1="12" x2="0" y2="30" stroke="#8a5c2a" stroke-width="3"/>
+    </g>
+    <g transform="translate(210,210) rotate(48)">
+      <path d="M0 -96 L6 -16 L3.5 14 L-3.5 14 L-6 -16 Z" fill="url(#handGrad)" stroke="#5e3d1a" stroke-width="1"/>
+      <line x1="0" y1="14" x2="0" y2="34" stroke="#8a5c2a" stroke-width="3"/>
+    </g>
+    <!-- seconds hand: sweeps with the film's progress -->
+    <g id="spear" transform="translate(210,210)">
+      <g id="spearSpin">
+        <line x1="0" y1="104" x2="0" y2="-104" stroke="#c08a4e" stroke-width="1.6"/>
+        <path d="M0 -104 L5 -88 L0 -96 L-5 -88 Z" fill="#c08a4e"/>
+        <circle cx="0" cy="118" r="5" fill="none" stroke="#c08a4e" stroke-width="1.6"/>
+      </g>
+    </g>
+    <circle cx="210" cy="210" r="7" fill="#1a140c" stroke="#b07a3e" stroke-width="1.5"/>
+    <circle cx="210" cy="210" r="2.5" fill="#e9dfc8"/>
+  </svg>
+
+  <h1>The Odyssey</h1>
+  <p class="kicker">Tell me, O Muse&hellip;</p>
+  <p class="src">Homer &mdash; <em>The Odyssey</em>, Book&nbsp;I, the opening, as told by Samuel Butler</p>
+  <button id="play" disabled>Loading</button>
+  <div id="loadwrap">
+    <div id="loadbar"><div id="loadfill"></div></div>
+    <div id="loadtxt">winding the movement&hellip;</div>
+  </div>
+  <p class="voicelab">voice lab &rarr; <a href="./compare.html">five narrators, one line</a></p>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+<script>
+// Lume indices around the chapter ring + progress sweep (seconds hand / ring).
+(function () {
+  const g = document.getElementById('indices');
+  const NS = 'http://www.w3.org/2000/svg';
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+    const x = 210 + Math.cos(a) * 138, y = 210 + Math.sin(a) * 138;
+    const r = document.createElementNS(NS, 'rect');
+    r.setAttribute('x', x - 2.5); r.setAttribute('y', y - 9);
+    r.setAttribute('width', 5); r.setAttribute('height', 18); r.setAttribute('rx', 2.5);
+    r.setAttribute('fill', '#e9dfc8'); r.setAttribute('opacity', 0.9);
+    g.appendChild(r);
+  }
+  const spear = document.getElementById('spearSpin');
+  const ringFill = document.querySelector('#ring .fill');
+  const setProgress = (p) => {
+    const k = Math.max(0, Math.min(1, p));
+    spear.setAttribute('transform', 'rotate(' + (k * 360) + ')');
+    ringFill.setAttribute('stroke-dashoffset', (314 * (1 - k)).toFixed(1));
+  };
+  const obs = new MutationObserver(() => {
+    const fw = document.getElementById('fill');
+    const lw = document.getElementById('loadfill');
+    if (fw && fw.style.width) setProgress(parseFloat(fw.style.width) / 100);
+    else if (lw && lw.style.width) setProgress(parseFloat(lw.style.width) / 100);
+  });
+  const watch = () => {
+    obs.observe(document.getElementById('fill'), { attributes: true, attributeFilter: ['style'] });
+    obs.observe(document.getElementById('loadfill'), { attributes: true, attributeFilter: ['style'] });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch);
+  else watch();
+})();
+</script>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
