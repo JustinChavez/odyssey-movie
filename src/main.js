@@ -155,7 +155,8 @@ document.body.appendChild(endCard);
 
   playBtn.disabled = false;
   playBtn.textContent = 'Play';
-  playBtn.focus({ preventScroll: true });
+  // Deliberately NOT focusing the button: a focused button plus a stray
+  // Space/Enter right after refresh would start the film unprompted.
 
   // Deep-link test mode: ?auto&shot=N&t=SEC skips the title card and jumps
   // straight into a shot. Handy for poking at frames without the mouse.
@@ -274,10 +275,9 @@ window.addEventListener('pointerdown', showUI);
 // ---------------------------------------------------------------------------
 
 window.addEventListener('keydown', (e) => {
-  if (document.body.classList.contains('titlemode')) {
-    if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); start(); }
-    return;
-  }
+  // On the title screen, no key starts the film — a refresh followed by a
+  // stray Space/Enter was starting playback unprompted. Play is click-only.
+  if (document.body.classList.contains('titlemode')) return;
   switch (e.code) {
     case 'Space': e.preventDefault(); bPlay.click(); showUI(); break;
     case 'ArrowRight': director.seek(director.time + (e.shiftKey ? 15 : 5)); showUI(); break;
