@@ -6,7 +6,7 @@ A ~118-second procedural film of the opening of Homer's *Odyssey* (Book I,
 Samuel Butler translation), rendered live in the browser with three.js. Nine
 sequences, 24 shots. Every mesh, texture, camera move, particle system and
 ambient sound is generated in code at load time; the only shipped media are 23
-pre-rendered narration MP3s and the voice-lab comparison samples. It is a
+pre-rendered narration MP3s. It is a
 static site with no build step, no package manager and no server-side
 anything — the repo root is the deployable artifact. Open it over HTTP and it
 plays.
@@ -15,7 +15,6 @@ plays.
 
     index.html              the player: bronze/field-watch theme, title dial,
                             transport, all the CSS. Loads ./src/main.js.
-    compare.html            the voice lab — one line across candidate voices
     server.py               tiny no-cache static dev server
     scripts/gap-report.py   standalone silence measure/trim tool for the clips
 
@@ -45,7 +44,6 @@ plays.
     src/shots/seq01…seq09   the nine sequences, one file each
 
     audio/narr_00…22.mp3    the narration, one clip per captioned shot
-    voice-lab/              voice comparison samples + claude-research.md
 
 ## The invariants — do not break these
 

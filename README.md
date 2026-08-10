@@ -83,10 +83,8 @@ are the only shipped media in the project.
 
 Each line is rendered against a byte-identical instructions block with a
 pinned model snapshot, so re-voicing one sentence does not shift the delivery
-of the others. [`voice-lab/claude-research.md`](voice-lab/claude-research.md)
-documents the voice research and the delivery templates, and
-[`compare.html`](compare.html) is the listening page — the same line across
-every candidate voice.
+of the others. The final voice is OpenAI onyx with the crescendo delivery
+template.
 
 To re-voice: render the clips, run the silence pass, then update the measured
 lengths.
