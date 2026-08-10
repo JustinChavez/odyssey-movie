@@ -37,6 +37,10 @@ preloadEl.preload = 'auto';
 
 let voiceOn = true;
 let soundOn = true;
+// True while the scrubber is under a pointer. Declared up here because the
+// narration guard reads it, and narration can start before the transport
+// section below has been evaluated.
+let scrubbing = false;
 
 function browserSpeak(text) {
   if (!window.speechSynthesis || !text) return;
@@ -57,6 +61,11 @@ function stopNarration() {
 
 function playShotNarration(shot, idx) {
   if (!voiceOn || !shot || idx >= NARR.length || !NARR[idx]) return;
+  // Only speak while the film is being watched: running, or the user is
+  // dragging the scrubber and wants to hear where they are. A shot also
+  // becomes active at load and on a paused deep-link seek, and narrating
+  // those would talk over the title card.
+  if (!director.playing && !scrubbing) return;
   stopNarration();
   const src = NARR[idx];
   // Same src (e.g. the boot-warmed first clip): don't re-trigger a load.
@@ -167,7 +176,13 @@ document.body.appendChild(endCard);
     const si = Math.min(parseInt(params.get('shot') || '0', 10), director.shots.length - 1);
     const off = parseFloat(params.get('t') || '0');
     director.seek(director.shots[si].start + off);
-    if (params.has('play')) director.play();
+    // The seek lands while the film is still paused, so it narrates nothing;
+    // as in start(), the line for the shot already on screen has to be asked
+    // for explicitly once playback is running.
+    if (params.has('play')) {
+      director.play();
+      narrateCurrent();
+    }
     showUI();
   }
 })();
@@ -227,7 +242,6 @@ function toggleFull() {
 }
 
 // Scrub
-let scrubbing = false;
 const seekFromEvent = (e) => {
   audio.reset();
   stopNarration();
