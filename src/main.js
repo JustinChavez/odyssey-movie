@@ -216,6 +216,9 @@ playBtn.addEventListener('click', start);
 
 bPlay.addEventListener('click', () => {
   director.toggle();
+  // Update the glyph here, not just from the frame loop: pausing stops the
+  // loop, so onTime would never flip the icon back to play.
+  pg.textContent = director.playing ? '\u275A\u275A' : '\u25B6';
   if (director.playing) {
     audio.setPaused(false);
     narrateCurrent();
