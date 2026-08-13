@@ -1,5 +1,16 @@
 # The Odyssey — "Tell me, O Muse…"
 
+## The story
+
+Inspired by Andrej's tweet: https://x.com/karpathy/status/2083749667410727319
+
+I was curious about applying the same idea to the cheaper models that are
+increasingly competitive with closed-source ones like Opus. This is the
+result: built in about 360K fresh tokens at a cost of ~$0.08 — more than
+100x less than Opus's ~$10 budget — and longer! Had to do some
+back-and-forths, mainly fighting the editor and a stretch of blank
+narration audio, but it's mostly there.
+
 ## The original prompt
 
 > Look at how this was run and create something similar. Go off and return a
