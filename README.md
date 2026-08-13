@@ -1,38 +1,32 @@
 # The Odyssey — "Tell me, O Muse…"
 
-## The story
+## The original prompt
 
-Inspired by Andrej's tweet: https://x.com/karpathy/status/2083749667410727319
-
-I was curious about applying the same idea to the cheaper models that are
-increasingly competitive with closed-source ones like Opus. This is the
-result: built in about 360K fresh tokens at a cost of ~$0.08 — more than
-100x less than Opus's ~$10 budget — and longer! Had to do some
-back-and-forths, mainly fighting the editor and a stretch of blank
-narration audio, but it's mostly there.
-
-Here is the original prompt:
-
-> go off and do a really long session on the first lines of the Odyssey:
+> Look at how this was run and create something similar. Go off and return a
+> movie on the first lines of the odyssey:
 >
 > TELL ME, O MUSE, of that ingenious hero who traveled far and wide after he
 > had sacked the famous town of Troy. Many cities did he visit, and many were
 > the nations with whose manners and customs he was acquainted; moreover he
 > suffered much by sea while trying to save his own life and bring his men
-> safely home; but do what he might he could not save his men, for they
-> perished through their own sheer folly in eating the cattle of the Sun-god
-> Apollo; so the god prevented them from ever reaching home. Tell me, too,
-> about all these things, oh daughter of Zeus, from whatsoever source you may
-> know them.
+> safely home…
 >
-> So now all who escaped death in battle or by shipwreck had got safely home
-> except Odysseus, and he, though he was longing to return to his wife and
-> country, was detained by the goddess Calypso, who had got him into a large
-> cave and wanted to marry him. But as years went by, there came a time when
-> the gods settled that he should go back to Ithaca; even then, however, when
-> he was among his own people, his troubles were not yet over; nevertheless
-> all the gods had now begun to pity him except Poseidon, who still
-> persecuted him without ceasing and would not let him get home.
+> **The inspiration:**
+>
+> "We're starting to leave the territory where you'd test an LLM by e.g.
+> 'create an svg of pelican on a bicycle'. As one idea to generalize it, I
+> was interested what Opus 5 would do if I gave it the first paragraph of the
+> Lord of the Rings, a 1M token budget (~$10) and asked for three js render
+> of it. Opus went off for ~2 hours and wrote 5500 lines of code that
+> (procedurally) rendered the story. It's kind of janky but fun…" —
+> https://x.com/karpathy/status/2083749667410727319 · movie's site:
+> https://karpathy.ai/lotr-movie/
+>
+> ![Andrej Karpathy's tweet announcing the lotr-movie experiment](assets/karpathy-tweet.png)
+
+The movie cost **~$0.08** to build (about 360K fresh tokens — vs Opus's
+1M-token / ~$10 budget). Everything since the first render was just me
+editing.
 
 ## About the film
 
