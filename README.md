@@ -1,5 +1,41 @@
 # The Odyssey — "Tell me, O Muse…"
 
+## The story
+
+Inspired by Andrej's tweet: https://x.com/karpathy/status/2083749667410727319
+
+I was curious about applying the same idea to the cheaper models that are
+increasingly competitive with closed-source ones like Opus. This is the
+result: built in about 360K fresh tokens at a cost of ~$0.08 — more than
+100x less than Opus's ~$10 budget — and longer! Had to do some
+back-and-forths, mainly fighting the editor and a stretch of blank
+narration audio, but it's mostly there.
+
+Here is the original prompt:
+
+> go off and do a really long session on the first lines of the Odyssey:
+>
+> TELL ME, O MUSE, of that ingenious hero who traveled far and wide after he
+> had sacked the famous town of Troy. Many cities did he visit, and many were
+> the nations with whose manners and customs he was acquainted; moreover he
+> suffered much by sea while trying to save his own life and bring his men
+> safely home; but do what he might he could not save his men, for they
+> perished through their own sheer folly in eating the cattle of the Sun-god
+> Apollo; so the god prevented them from ever reaching home. Tell me, too,
+> about all these things, oh daughter of Zeus, from whatsoever source you may
+> know them.
+>
+> So now all who escaped death in battle or by shipwreck had got safely home
+> except Odysseus, and he, though he was longing to return to his wife and
+> country, was detained by the goddess Calypso, who had got him into a large
+> cave and wanted to marry him. But as years went by, there came a time when
+> the gods settled that he should go back to Ithaca; even then, however, when
+> he was among his own people, his troubles were not yet over; nevertheless
+> all the gods had now begun to pity him except Poseidon, who still
+> persecuted him without ceasing and would not let him get home.
+
+## About the film
+
 A procedural film of the opening of Homer's *Odyssey* (Book I, Samuel Butler
 translation), generated entirely in code. Every mesh, texture, camera move,
 particle and sound is synthesized at runtime with [three.js](https://threejs.org)
